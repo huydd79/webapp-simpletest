@@ -34,4 +34,4 @@ spec:
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30080 # Access via http://<K8s-Node-IP>:30080
+      nodePort: 31080 # Access via http://<K8s-Node-IP>:30080
