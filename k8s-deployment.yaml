@@ -49,10 +49,11 @@ metadata:
 spec:
   entryPoints:
     - web        # Port 80
-    # - websecure  # If using https
+    - websecure  # https
   routes:
     - match: Host(`webapp01.k8s.huydo.net`)
       kind: Rule
       services:
         - name: internal-web-service
           port: 80
+  tls: {}
