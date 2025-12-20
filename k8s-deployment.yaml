@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: internal-web-app  # Khớp với APP_NAME trong Jenkins
+  name: internal-web-app  
   labels:
     app: internal-web-app
 spec:
@@ -17,11 +17,10 @@ spec:
       imagePullSecrets:
         - name: cybr-registry-key
       containers:
-      - name: web-container # Khớp với container name trong lệnh 'set image'
+      - name: web-container
         image: registry.cybr.huydo.net/internal-web-app:latest
         ports:
         - containerPort: 80
-        # Thêm readiness probe để Jenkins 'rollout status' chính xác hơn
         readinessProbe:
           httpGet:
             path: /
@@ -40,4 +39,20 @@ spec:
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30080 # Đã sửa từ 31080 về 30080
+      nodePort: 30080
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: internal-web-app-ir
+  namespace: default 
+spec:
+  entryPoints:
+    - web        # Port 80
+    # - websecure  # If using https
+  routes:
+    - match: Host(`webapp01.k8s.huydo.net`)
+      kind: Rule
+      services:
+        - name: internal-web-service
+          port: 80
