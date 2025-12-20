@@ -1,27 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: internal-web-app
+  name: internal-web-app  # Khớp với APP_NAME trong Jenkins
   labels:
-    app: hello-world
+    app: internal-web-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: hello-world
+      app: internal-web-app
   template:
     metadata:
       labels:
-        app: hello-world
+        app: internal-web-app
     spec:
-      # This secret allows K8s to log into your registry.cybr.huydo.net
       imagePullSecrets:
         - name: cybr-registry-key
       containers:
-      - name: web-container
+      - name: web-container # Khớp với container name trong lệnh 'set image'
         image: registry.cybr.huydo.net/internal-web-app:latest
         ports:
         - containerPort: 80
+        # Thêm readiness probe để Jenkins 'rollout status' chính xác hơn
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -30,8 +36,8 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: hello-world
+    app: internal-web-app
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 31080 # Access via http://<K8s-Node-IP>:30080
+      nodePort: 30080 # Đã sửa từ 31080 về 30080
